@@ -6,25 +6,52 @@ import turtle
 
 class Canvas:
 	def __init__(self, w, h):
-		self.turtle = turtle.Turtle()
-		self.screen = turtle.Screen()
 		self.width = w
 		self.height = h
-
+		self.visibleObjects = []
+		self.turtle = turtle.Turtle()
+		self.screen = turtle.Screen()
 		self.screen.setup(width = self.width, height = self.height)
 		self.turtle.hideturtle()
 
+	def drawAll(self):
+		self.turtle.reset()
+		self.turtle.tracer(0)
+		for shape in self.visibleObjects:
+			shape._draw(self.turtle)
+		self.turtle.tracer(1)
+		self.turtle.hideturtle()
+
+	def addShape(self, shape):
+		self.visibleObjects.append(shape)
+
 	def draw(self, gObject):
+		gObject.setCanvas(self)
+		gObject.setVisible(True)
 		self.turtle.up()
 		self.screen.tracer(0)
 		gObject._draw(self.turtle)
 		self.screen.tracer(1)
+		self.addShape(gObject)
+
 
 
 class GeometricObject:
 	def __init__(self):
 		self.lineColor = 'black'
 		self.lineWidth = 1
+		self.visible = False
+		self.myCanvas = None
+
+	def setColor(self, color):
+		self.lineColor = color
+		if self.visible:
+			self.myCanvas.drawAll()
+
+	def setWidth(self, width):
+		self.lineWidth = width
+		if self.visible:
+			self.myCanvas.drawAll()
 
 	def getColor(self):
 		return self.lineColor
@@ -32,14 +59,15 @@ class GeometricObject:
 	def getWidth(self):
 		return self.lineWidth
 
-	def setColor(self, color):
-		self.lineColor = color
-
-	def setWidth(self, width):
-		self.lineWidth = width
-
 	def _draw(self, someturtle):
 		print("Error: You must define _draw in subclass")
+
+	def setVisible(self, vFlag):
+		self.visible = vFlag
+
+	def setCanvas(self, theCanvas):
+		self.myCanvas = theCanvas
+
 
 
 class Point(GeometricObject):
@@ -60,6 +88,7 @@ class Point(GeometricObject):
 	def _draw(self, turtle):
 		turtle.goto(self.x, self.y)
 		turtle.dot(self.lineWidth, self.lineColor)
+
 
 
 class Line(GeometricObject):
